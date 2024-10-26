@@ -3,13 +3,13 @@ from fastapi import HTTPException
 import google.generativeai as genai
 import os
 import json 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS']=r'c:\Users\deepa\Downloads\orbital-stream-426213-r2-6040f858ab8b.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS']=os.getenv('GOOGLE_APPLICATION_CREDENTIALS_NEW')
 prompt= """
   Given the need, generate a JSON response based on the following conditions:
-
+ 
   1. If the need is "pledge", return JSON with:
      - need
-     - customer_name
+     - customer_namex
      - weight
      - article (auto-filled based on item_description includesornaments (gold,silver,bronze etc...fill with samll letter))
      - item_description
@@ -50,7 +50,7 @@ prompt= """
   
 """
 def speech(inp):
-    api_key='AIzaSyCivb2rBfdp-xP-nU7xCszkpOo5JdJM-24'
+    api_key=os.getenv('GENAI_API_KEY')
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel("gemini-1.5-flash-001",generation_config={"response_mime_type": "application/json"})
     response=model.generate_content(prompt+inp)

@@ -6,12 +6,10 @@ import json
 import io
 
 # Load API key from environment variables
-api_key = os.getenv('GENAI_API_KEY')
-if not api_key:
-    raise ValueError("API key not set in environment variables")
+
 
 # Set up the API configuration
-genai.configure(api_key=api_key)
+genai.configure(api_key=os.getenv('GENAI_API_KEY'))
 
 def text_classifier(image_data):
     try:
