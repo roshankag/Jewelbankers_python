@@ -14,7 +14,6 @@ genai.configure(api_key=os.getenv('GENAI_API_KEY'))
 def text_classifier(image_data):
     try:
         model = genai.GenerativeModel("gemini-1.5-flash-001",generation_config={"response_mime_type": "application/json"})
-        
         # Open the image from the byte stream
         image_stream = io.BytesIO(image_data)
         image = Image.open(image_stream)

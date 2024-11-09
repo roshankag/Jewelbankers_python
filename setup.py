@@ -50,9 +50,10 @@ setup(
     "googleapis-common-protos",
     "grpc-google-iam-v1",
     "grpcio",
-    "grpcio-status"
-
-
+    "grpcio-status",
+    "requests", 
+    "jellyfish",
+    "re"       
     ],
     entry_points={
         "console_scripts": [

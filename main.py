@@ -1,10 +1,11 @@
 import json
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import re
 import uvicorn
+from cnn import find_best_match
 from genai2 import text_classifier
 from speech21 import speech
 
@@ -31,23 +32,24 @@ app.add_middleware(
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-
 class Input(BaseModel):
-    input: str
+    input: str  # The input string from the frontend
+    token: str  # The token provided by the frontend for authentication
 
 @app.post("/customer")
 async def get_customer(input_data: Input):
     try:
-        # Log the input data
+        # Log the input data and token
         print(f"Received input: {input_data.input}")
+        print(f"Received token: {input_data.token}")
 
-        # Call the speech processing function
-        result = speech(input_data.input)  # Replace with your actual function
-        
+        # Call the speech processing function with the input and token
+        result = speech(input_data.input, input_data.token)  # Your processing function that needs the input and token
+
         return {"message": "Processed speech data", "data": result}
     except Exception as e:
-        print(f"Error processing customer input: {e}")  # Log the error
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"Error processing customer input: {e}")  # Log the error for debugging
+        raise HTTPException(status_code=500, detail="Internal Server Error")  # Return a 500 error if something goes wrong
 
 
 # Endpoint to fetch gold and silver rates
@@ -68,7 +70,7 @@ async def debug_customer(input_data: Input):
     return {"message": "Debug processed", "input": input_data.input}
 
 @app.post("/image")
-async def upload_image_for_classification(file: UploadFile = File(...)):
+async def upload_image_for_classification(file: UploadFile = File(...), token: str = Form(...)):
     try:
         image_data = await file.read()
 
@@ -108,7 +110,13 @@ async def upload_image_for_classification(file: UploadFile = File(...)):
             },
             "print_details": None  # Assuming this is an additional field you may need
         }
+        api_url = 'http://localhost:8080/jewelbankersapi/customers?customerName' 
 
+        # Check if 'customer_name' exists in response_json
+        if 'customer_name' in response:
+            best_match_name, best_match_score = find_best_match(response['customer_name'], api_url, token)
+            response['customer_name'] = best_match_name  # Update the customer_name in the JSON response
+            print("response final",response)
         return response  # Returning the formatted response
 
     except Exception as e:
